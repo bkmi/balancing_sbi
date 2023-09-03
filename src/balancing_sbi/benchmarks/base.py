@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from itertools import chain
 import lampe
 import os
 import torch.nn as nn
@@ -71,10 +72,13 @@ class Benchmark(ABC):
         return os.path.exists(os.path.join(self.get_store_path(dataset, id=dataset_id), 'block_{}.h5'.format(block_id)))
 
     def merge_blocks(self, config, dataset, dataset_size, block_ids, dataset_id=None):
-        data = lampe.data.H5Dataset(*[os.path.join(self.get_store_path(dataset, id=dataset_id), 'block_{}.h5'.format(block_id)) for block_id in block_ids], 
-                                    batch_size=self.get_simulation_batch_size())
-
-        lampe.data.H5Dataset.store(data, os.path.join(self.get_store_path(dataset, id=dataset_id), 'dataset_{}.h5'.format(dataset_size)), size=dataset_size)
+        paths = [os.path.join(self.get_store_path(dataset, id=dataset_id), 'block_{}.h5'.format(block_id)) for block_id in block_ids]
+        datasets = [lampe.data.H5Dataset(path, batch_size=self.get_simulation_batch_size()) for path in paths]
+        lampe.data.H5Dataset.store(
+            pairs=chain(*datasets), 
+            file=os.path.join(self.get_store_path(dataset, id=dataset_id), 'dataset_{}.h5'.format(dataset_size)), 
+            size=dataset_size,
+        )
 
     def are_blocks_merged(self, config, dataset, dataset_size, dataset_id=None):
         return os.path.exists(os.path.join(self.get_store_path(dataset, id=dataset_id), 'dataset_{}.h5'.format(dataset_size)))
