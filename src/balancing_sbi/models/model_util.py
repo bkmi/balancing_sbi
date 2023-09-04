@@ -7,6 +7,7 @@ from .ratio_bnpe import RatioBNPEFactory
 from .arch_initialized_ratio_bnpe import ArchInitializedRatioBNPEFactory
 from .nre_c import NRECFactory
 from .bnre_c import BNRECFactory
+from .hybrid import HybridFactory
 
 def load_model_factory(config, benchmark, simulation_budget):
     if config["method"] == "nre":
@@ -35,6 +36,9 @@ def load_model_factory(config, benchmark, simulation_budget):
 
     elif config["method"] == "bnre_c":
         return BNRECFactory(config, benchmark, simulation_budget)
+
+    elif config["method"] == "hybrid":
+        return HybridFactory(config, benchmark, simulation_budget)
 
     else:
         raise NotImplementedError("Model not implemented")

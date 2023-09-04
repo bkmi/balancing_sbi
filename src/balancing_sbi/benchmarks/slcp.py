@@ -1,10 +1,15 @@
 # Reproduced from https://github.com/montefiore-ai/hypothesis
 
+from functools import partial
 import torch
 import zuko
 
+from ._extras import HybridParts
 from .base import Benchmark
 from torch.distributions.multivariate_normal import MultivariateNormal as Normal
+
+import misbi.mist.nn
+import misbi.mist.sampler
 
 
 class SLCP(Benchmark):
@@ -78,6 +83,35 @@ class SLCP(Benchmark):
 
     def get_flow_build(self):
         return zuko.flows.NSF, {"hidden_features": [256]*3, "activation": torch.nn.SELU}
+
+    def get_hybrid_build(self):
+        q_Y_given_X = partial(
+            misbi.mist.nn.MAF,
+            transforms=5,
+            randperm=True,
+            hidden_features=[64],
+            activation="relu",
+        )
+        critic = partial(
+            misbi.mist.nn.JointCriticResMLP,
+            hidden_dims=[128],
+            activation="gelu",
+            normalize=True,
+        )
+        sampler = partial(
+            misbi.mist.sampler.RejectionSampler, 
+            transform_y_c_to_y_u=self.get_transform_constrained_to_unconstrained(),
+            max_sampling_batch_size=10_000,
+            num_samples_to_find_max=10_000,
+            num_iter_to_find_max=100,
+            m=1.2,
+            timeout_seconds=1800 ,
+        )
+        return HybridParts(
+            q_Y_given_X=q_Y_given_X,
+            critic=critic,
+            sampler=sampler,
+        )
 
     def get_device(self):
         return "cpu"

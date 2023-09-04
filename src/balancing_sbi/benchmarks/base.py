@@ -6,6 +6,8 @@ import torch.nn as nn
 
 from enum import Enum
 
+from balancing_sbi.benchmarks._extras import get_bijection
+
 class Datasets(Enum):
     TRAIN = "train"
     VAL = "val"
@@ -199,3 +201,6 @@ class Benchmark(ABC):
     @abstractmethod
     def get_test_time(self, dataset_size):
         pass
+
+    def get_transform_constrained_to_unconstrained(self):
+        return get_bijection(self.get_prior())
