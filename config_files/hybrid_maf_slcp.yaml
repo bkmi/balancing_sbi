@@ -1,7 +1,6 @@
 benchmark: slcp
 method: hybrid
-# simulation_budgets: [1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072]
-simulation_budgets: [1024]
+simulation_budgets: [1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072]
 val_fraction: 0.1
 train_set_size: 131072
 val_set_size: 13110
