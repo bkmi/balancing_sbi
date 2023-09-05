@@ -94,7 +94,7 @@ class SLCP(Benchmark):
         )
         critic = partial(
             misbi.mist.nn.JointCriticResMLP,
-            hidden_dims=[128],
+            hidden_dims=[256, 256],
             activation="gelu",
             normalize=True,
         )
