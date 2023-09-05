@@ -33,10 +33,10 @@ class HybridWithEmbedding(nn.Module):
 
     def forward(self, theta, x):
         """this method also makes our model obey the lampe (theta, x) argument ordering"""
-        return self.hybrid(self.embedding(x), theta)
+        return self.hybrid.approx_unnormalized_log_p_y_given_x(self.embedding(x), theta)
 
     def sample(self, x, shape):
-        return self.hybrid.sample(self.embedding(x), shape)
+        return self.hybrid.sample(self.embedding(x), shape, show_progress_bars=False)
     
     def loss(self, theta, x):
         """this method also makes our model obey the lampe (theta, x) argument ordering"""
@@ -139,7 +139,10 @@ class HybridModel(Model):
                     self.sample = sampling_fct
                     self.log_prob = log_prob_fct
 
-            return Posterior(lambda shape: self.model.sample(x.to(self.device), shape).cpu(), lambda theta: self.model(theta.to(self.device), x.to(self.device)).cpu())
+            return Posterior(
+                lambda shape: self.model.sample(x.to(self.device), shape).cpu(), 
+                lambda theta: self.model(theta.to(self.device), x.to(self.device)).cpu(),
+            )
 
         return get_posterior
 
@@ -147,7 +150,7 @@ class HybridModel(Model):
         return self.log_prob(theta, x)
 
     def sampling_enabled(self):
-        return True
+        return False
 
     def save(self):
         torch.save(self.embedding.state_dict(), os.path.join(self.model_path, self.embedding_file_name))

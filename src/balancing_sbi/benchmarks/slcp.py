@@ -105,7 +105,7 @@ class SLCP(Benchmark):
             num_samples_to_find_max=10_000,
             num_iter_to_find_max=100,
             m=1.2,
-            timeout_seconds=1800 ,
+            timeout_seconds=None,
         )
         return HybridParts(
             q_Y_given_X=q_Y_given_X,
